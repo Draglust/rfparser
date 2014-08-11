@@ -1,0 +1,70 @@
+<?php
+//include('ganon.php');
+// Create DOM from URL or file
+//$html = file_get_dom('http://data.res.com/index.php?view=soccer&type=soccerfixtures');
+//echo $html;
+/* Find all images 
+foreach($html('tr') as $element) 
+{
+    echo $element->class . '<br>';
+    
+   //foreach()   
+    //{
+        echo $element->src . '<br>';
+    //}
+}*/
+//CONECTAMOS CON LA BASE DE DATOS
+$enlace =  mysql_connect('localhost', 'root', '');
+if (!$enlace) {
+    die('No pudo conectarse: ' . mysql_error());
+}
+else
+{
+    echo 'Conectado satisfactoriamente<br>';
+}
+mysql_select_db('rf', $enlace) or die('Could not select database.');
+
+//------------------------------------
+
+//ABRIMOS ARCHIVO EN MODO LECTURA
+$file = fopen("webcompleta.txt", "r") or exit("Imposible abrir archivo");
+$i=0;
+
+//INTRODUCIMOS EN UN ARRAY CADA LINEA DEL ARCHIVO,PREFORMATEADA A UTF-8
+while(!feof($file))
+{
+    
+    $listado[$i]=utf8_encode(fgets($file));
+    $individual=explode("\t",$listado[$i]);
+    $segundo=explode('/',$individual[2]);
+    //REEMPLAZA CARACTERES EXTRAÑOS EN LA FECHA
+    $reemp=str_replace('Ã','i',$individual[4]);
+    //-----------------------------------------
+    //echo $individual[0]. ' : '. $segundo[1].' : '.$segundo[2] .' : '. $reemp.'<br>';
+    $sql = 'INSERT INTO registro(id,pais,liga,tiempo) values('.$individual[0].',"'.$segundo[1].'","'.$segundo[2].'","'.$reemp .'")';                   //--------
+    echo $sql;
+    $resultado = mysql_query($sql, $enlace);
+    if(!$resultado)
+    {                                                   
+        echo '<br>Error de BD, no se pudo consultar la base de datos<br>';
+        echo 'Error MySQL: ' . mysql_error();
+        exit;
+    }
+    $i++;
+    
+}
+fclose($file);
+
+
+/*while ($fila = mysql_fetch_assoc($resultado)) {
+ 
+}*/
+
+mysql_free_result($resultado);
+
+
+
+
+//PREPARAR BASE DE DATOS PARA QUE COJA INDIVIDUALMENTE CADA ID,PAIS,LIGA Y FECHA DE MODIFICACION
+mysql_close($enlace);
+?>
